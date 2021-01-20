@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J PGDSpiderdinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This runs PGDSpider for a population map in structure format (for Dinopop2020)
+
+SECONDS=0 # To keep track of how much time it took
+
+java="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/PGDspider/ancientJava/bin/java"
+spid="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/PGDspider/JoelsAmazingSpid.spid"
+PGDS="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/PGDspider/PGDSpider2-cli.jar"
+
+if [[ $1 ]] ; then infile=$1
+else echo "No input file was given. Usage: myscript.scr infile" ; { return; } 2>/dev/null || exit 1
+fi
+
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/input"
+if [[ $2 = 'here' ]] ; then outdir='.' ; fi
+inbase=$(basename $1) ; inbase="${inbase%.*}"
+
+
+# Running PGDSPider
+"$java" -Xmx1024m -Xms512m -jar "$PGDS"\
+ -inputfile "$1"\
+ -outputfile "$outdir"/"${inbase}.bsi"\
+ -spid "$spid"
+
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run PGDSpider on $1."
+echo "Output at ${outdir}/${inbase}.bsi"
+echo '#################################################################'

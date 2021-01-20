@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# This extracts the loci IDs from the populations output files, for later use (input file hard-coded for now)
+
+projdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all"
+popdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/populations_output"
+
+cd "$projdir"
+
+chmod 755 "$popdir"
+grep -v '^#' "$popdir"/batch_1.sumstats.tsv | cut -f 2 | sort -nu | cat -n | sed 's/^\s\+//' > "$popdir"/filtered_loci.tsv
+chmod 555 "$popdir"

@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J kraken2run
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+module load bioinfo-tools
+module load Kraken2/2.0.8-beta
+
+in="/crex/proj/uppstore2017173/b2014326/Dino_transcriptomes/Mapping/fastaToBeMapped.fasta"
+
+kraken2 --db ../bacteria_db --threads 20 "$in" > kraken2out.tsv

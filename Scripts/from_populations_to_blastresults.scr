@@ -1,0 +1,56 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J pop2blastDinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This is a wrapper that takes populations output and ends with creation of blast output
+
+# Outputs will be located in pipelineoutputs, in a dir by the popmap name.
+# If you run this script several times without changing output filenames between runs, they might be overwritten
+
+module load bioinfo-tools
+module load blast/2.9.0+
+
+SECONDS=0 # To keep track of how much time it took
+
+Scripts="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/Scripts"
+cstacks="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/cstacks_output/batch_2.catalog.tags.tsv.gz"
+blasdb="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/blastDB/transcriptome/Dino"
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/pipelineoutputs"
+
+pops="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/populations_output/.WithDiploKrakenBlacklist"
+maps="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks"
+
+cd "$outdir" ; chmod 755 .
+
+for pop in country geo population salinity species ; do
+
+s="$pops/$pop/batch_2.structure.tsv"
+p="$maps/popmap_$pop.tsv"
+
+mkdir "$pop" ; cd "$pop"
+
+python3 "$Scripts/parseStructureB4pgdSpider.py" "$s" "$p"
+# The default outputname will be e.g. lakes.structure if input ($p) was popmap_lakes.tsv, located in wd.
+bash "$Scripts/PGDSpider_for_Dinopop2020.scr" "$pop.structure" "here"
+# Output from this will be like "pop.bsi" in wd (without quote characters). 3-letter extension important!
+bash "$Scripts/bayeScan_for_Dinopop2020.scr" "$pop.bsi" "here"
+# Output from this will be four files, but the interesting one is called "$popmap_fst.txt"
+python3 "$Scripts/parseBayesoutput.py" "${pop}_fst.txt" "$s" -p 0.90
+# Output will be called "$popmap_fst.txt.translated"
+python3 "$Scripts/bayes2fasta.py" "${pop}_fst.txt.translated" "$cstacks"
+# Output will be called $pop.fasta
+blastn -query "$pop.fasta" -db "$blasdb" -num_descriptions 10 -num_alignments 3 -out "$pop.blastn"
+
+cd "$outdir"
+
+done
+
+chmod 555 . "$outdir" # For safety
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run $(basename "$0")."
+echo '#################################################################'

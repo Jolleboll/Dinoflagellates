@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J dinopop2020cstacks1.35
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This runs cstacks 1.35 for the Dinopop2020 samples, i.e. Dinopop+Dinopop2019 samples.
+
+dir135="/sw/bioinfo/Stacks/1.35/milou" # Just the path to stacks 1.35 installation
+
+datadir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/links_to_ustacks_outputs" # Input links
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/cstacks_output" # Put output here
+
+SECONDS=0 # To keep track of how much time it took
+
+cd "$datadir"
+
+# Used these options:  -n 2 -p 32
+"$dir135"/cstacks -b 2 -o "$outdir" -s SHBA01 -s SHBA15 -s SHBA16 -s SHBA17 -s SHBA18 -s SHHI217 -s SHHIT10 -s PACO1 -s PACO10 -s PACO11 -s PACO12 -s PACO13 -s PACO14 -s PACO2 -s PACO3 -s PACO4 -s PACO5 -s PACO6 -s PACO7 -s PACO8 -s PACO9 -s PAER_101 -s PAER_102 -s PAER103 -s PAER_104 -s PAER105 -s PAER106 -s PAER107 -s PAER110 -s PAER111 -s PAER112 -s PAER114 -s PAER115 -s PAER118 -s PAER119 -s PAER120 -s PAER122 -s PAER_123 -s PAER125 -s PAER126 -s PAER_126 -s PAER2 -s PAER3 -s PAER9 -s SHBA02 -s SHBA07 -s SHBA08 -s SHBA09 -s SHBA11 -s SHBA12 -s SHBA14 -s SHHI107 -s SHHI143 -s SHHI154 -s SHHI162 -s SHHI172 -s SHHI_174 -s SHHI20 -s SHHI215 -s SHHI42 -s SHHIT14 -s SHHI_T16 -s SHHIT25 -s SHHI_T27 -s SHHIT29 -s SHHIT31 -s SHHIT34 -s SHHIT38 -s SHHIT46 -s SHHIT6 -s SHLL1303 -s SHLL1304 -s SHLL1311 -s SHLL1312 -s SHLL1317 -s SHLL1318 -s SHLL1321 -s SHLL1322 -s SHLL1329 -s SHLL1335 -s SHLL1339 -s SHLL71306 -s SHLL71310 -s SHLL7_1319 -s SHLL7_1323 -s SHLL71324 -s SHLL7_1327 -s SHLL71330 -s SHLL71331 -s SHLL71334 -s SHMC109 -s SHMC14 -s SHMC15 -s SHMC161 -s SHMC174 -s SHMC190 -s SHMC209 -s SHMC210 -s SHMC219 -s SHMC221 -s SHMC49 -s SHMC50 -s SHMC52 -s SHMC53 -s SHMC_53 -s SHMC64 -s SHMC68 -s SHMC_68 -s SHMC69 -s SHMC79 -s SHMCT7 -s SHTV_1001 -s SHTV1002 -s SHTV1005 -s SHTV_1006 -s SHTV1008 -s SHTV1020 -s SHTV1022 -s SHTV1027 -s SHTV1032 -s SHTV_1040 -s SHTV112 -s SHTV901 -s SHTV902 -s SHTV904 -s SHTV_905 -s SHTV_906 -s SHTV907 -s SHTV_909 -s SHTV913 -s SHTV_914 -s SHTV916 -s SHTV921 -s SHVE110 -s SHVE112 -s SHVE12 -s SHVE121 -s SHVE122 -s SHVE126 -s SHVE164 -s SHVE166 -s SHVE167 -s SHVE25 -s SHVE34 -s SHVE55 -s SHVE60 -s SHVE80 -s SHVE83 -s SHVET12 -s SHVET15 -s SHVET17 -s SHVET18 -s SHVET9 -n 2 -p 32
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run cstacks on Dinopop2020 samples."
+echo '#################################################################'

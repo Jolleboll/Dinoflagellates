@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J kraken2build
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+cd "/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/kraken"
+
+module load bioinfo-tools
+module load Kraken2/2.0.8-beta
+
+
+#kraken2-build --download-library bacteria --db bacteria_db
+kraken2-build --build --db bacteria_db --threads 20
+kraken2-build --clean --db bacteria_db --threads 20 # Removes intermediate files hogging space

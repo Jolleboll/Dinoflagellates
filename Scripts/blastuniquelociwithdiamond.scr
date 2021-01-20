@@ -1,0 +1,57 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J uniqueDiamondsDinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# Blasts/Diamonds unique loci in a popmap against the merged transcriptome
+
+module load bioinfo-tools
+module load diamond/0.9.29
+
+SECONDS=0 # To keep track of how much time it took
+
+loci="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/unique_loci"
+blasdb="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/blastDB/transcriptome/DinoDiamond.dmnd"
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/unique_loci/Blasting"
+
+# cd "$loci"
+# chmod 755 .
+# for f in *uniqueLoci ; do
+# 	python3 loci2fasta.py "$f" ../cstacks_output/batch_2.catalog.tags.tsv.gz "${f%.*}".fasta
+# done
+# chmod 555 .
+
+# diamond makedb --in myfasta # Just to remember the syntax (i.e. not really part of this script)
+
+cd "$outdir" ; chmod 755 .
+
+# for f in "$loci"/*.fasta ; do
+# # in="$loci/salinity.$f.fasta"
+# 	out="${f##*/}" ; out="${out%.*}".diamondout
+# 	diamond blastx --db "$blasdb" --threads 20 -k 5 --query "$f" --out "$out"
+
+# done
+
+# # Adding headers (default headers!!!)
+# header="#queryID       targetID        identity        alignlen        Nmismatches     Ngapopen        qstart  qend    sstart  send    evalue        bitscore"
+# printf '%s\n' "$header" > header.header
+# for merp in *diamondout ; do
+# 	cat header.header "$merp" > tmp
+# 	mv tmp "$merp"
+# done
+# rm header.header
+
+# Adding annotations
+for merp in *diamondout ; do
+	python3 addAnnotations2diamondOutput.py "$merp" allMMETSPannotations.swissprot
+	echo "Done with $merp."
+done
+
+chmod 555 .
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run $(basename "$0")."
+echo '#################################################################'

@@ -1,0 +1,196 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J populations1.35dinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This runs populations 1.35 for the Dinopop2020 samples, i.e. Dinopop+Dinopop2019 samples.
+
+SECONDS=0 # To keep track of how much time it took
+
+dir135="/sw/bioinfo/Stacks/1.35/milou"
+projdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all"
+datadir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/symlinks_to_all_stacks_outputs"
+
+# Choose an output folder (create it before running this script)
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/populations_output"
+# outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/populations_output/rerunlakes0.5"
+
+# Choose a blacklist (myBigblacklist.txt is both kraken and multidiploid loci)
+B="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/myBigblacklist.txt"
+
+pop="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_population.tsv"
+spe="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_species.tsv"
+cnt="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_country.tsv"
+sal="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_salinity.tsv"
+geo="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_geo.tsv"
+fil="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_bayesfilter.tsv"
+ant="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/popmaplinks/popmap_antarcticaLakes.tsv"
+
+cd "$projdir"
+
+# Populations outputs to cwd by default, and this can't be changed,
+# so have to make $datadir mutable, too. (The output is moved from cwd to $outdir with the mv !(*.gz) command)
+chmod 755 "$outdir" "$datadir" 
+
+shopt -s extglob # Just some bash magic
+
+## The following block of code was to re-run all 8 populations with r=0.5
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $pop" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -B "$B" -P "$datadir" -M "$pop" -b 2 -f p_value -t 36 -p 6 -r 0.5 --fstats --structure --write_single_snp
+# dirn="${pop//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn" # This makes sure the output of this run is put in a separate directory. Note the amazing extglob replacement syntax!
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $pop" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/populations_output"
+# chmod 755 "$outdir"
+
+## This loop is for the antarctica lakes run
+# for r in 0.5 0.6 0.8 ; do
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $ant" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -B "$B" -P "$datadir" -M "$ant" -b 2 -f p_value -t 36 -p 3 -r "$r" --fstats --structure --write_single_snp
+# dirn="${ant//@(*_|.*)}_$r" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $ant" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# done
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Running populations for $sal" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+"$dir135"/populations -B "$B" -P "$datadir" -M "$sal" -b 2 -f p_value -t 36 -p 2 -r 0.5 --fstats --structure --write_single_snp
+dirn="${sal//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn" # This makes sure the output of this run is put in a separate directory. Note the amazing extglob replacement syntax!
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Done with $sal" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Running populations for $pop" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+"$dir135"/populations -B "$B" -P "$datadir" -M "$pop" -b 2 -f p_value -t 36 -p 8 -r 0.5 --fstats --structure --write_single_snp
+dirn="${pop//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Done with $pop" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Running populations for $cnt" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+"$dir135"/populations -B "$B" -P "$datadir" -M "$cnt" -b 2 -f p_value -t 36 -p 5 -r 0.5 --fstats --structure --write_single_snp
+dirn="${cnt//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Done with $cnt" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Running populations for $geo" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+"$dir135"/populations -B "$B" -P "$datadir" -M "$geo" -b 2 -f p_value -t 36 -p 4 -r 0.5 --fstats --structure --write_single_snp
+dirn="${geo//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Done with $geo" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Running populations for $spe" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+"$dir135"/populations -B "$B" -P "$datadir" -M "$spe" -b 2 -f p_value -t 36 -p 3 -r 0.5 --fstats --structure --write_single_snp
+dirn="${spe//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "Done with $spe" | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $fil" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -B "$B" -P "$datadir" -M "$fil" -b 2 -f p_value -t 36 -p 8 -r 0.3 --fstats --structure --write_single_snp
+# dirn="${fil//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $fil" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+##########################################################################
+##########################################################################
+
+## The code below is to run without a blacklist
+
+## Antarctica lakes
+# for r in 0.2 0.4 0.6 0.8 ; do
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $ant" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$ant" -b 2 -f p_value -t 36 -p 3 -r "$r" --fstats --structure --write_single_snp
+# dirn="${ant//@(*_|.*)}_$r" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $ant" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# done
+
+## All the others 
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $sal" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$sal" -b 2 -f p_value -t 36 -p 2 -r 0.5 --fstats --structure --write_single_snp
+# dirn="${sal//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $sal" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $pop" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$pop" -b 2 -f p_value -t 36 -p 6 -r 0.4 --fstats --structure --write_single_snp
+# dirn="${pop//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn" # This makes sure the output of this run is put in a separate directory. Note the amazing extglob replacement syntax!
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $pop" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $cnt" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$cnt" -b 2 -f p_value -t 36 -p 4 -r 0.5 --fstats --structure --write_single_snp
+# dirn="${cnt//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $cnt" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $geo" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$geo" -b 2 -f p_value -t 36 -p 3 -r 0.5 --fstats --structure --write_single_snp
+# dirn="${geo//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $geo" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $spe" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$spe" -b 2 -f p_value -t 36 -p 2 -r 0.5 --fstats --structure --write_single_snp
+# dirn="${spe//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $spe" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Running populations for $fil" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# "$dir135"/populations -P "$datadir" -M "$fil" -b 2 -f p_value -t 36 -p 8 -r 0.3 --fstats --structure --write_single_snp
+# dirn="${fil//@(*_|.*)}" ; mkdir -p "$outdir"/"$dirn" ; cd "$datadir" ; mv !(*.gz) "$outdir"/"$dirn"
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+# printf -- '%s\n' "Done with $fil" | tee -a /dev/stderr
+# printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+
+cd "$projdir"
+
+chmod 555 "$outdir" "$datadir"
+
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
+printf -- '%s\n' "$SECONDS seconds required to run populations on Dinopop2020 samples." | tee -a /dev/stderr
+printf -- '%s\n' '#################################################################' | tee -a /dev/stderr
