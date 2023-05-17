@@ -1,0 +1,57 @@
+#!/usr/bin/python3
+
+import argparse,sys
+
+
+
+############ Input and such ############
+desc	='''This program makes the annotated diamond outputs easier to overview.'''
+parser	=argparse.ArgumentParser(description=desc,formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('i',metavar='Input file',help='The annotated diamond output file.')
+# parser.add_argument('-c',metavar='Crit',type=float,help='Critical hit chance for spells. 0.07 with talents.',default=0.05)
+# parser.add_argument('-e',metavar='ExtraHealing',type=int,help='The total +healing from items.',default=0)
+# parser.add_argument('-sp',metavar='SpeedBonus',type=float,help='Total speed bonus. 0.5 from talents.',default=0.0)
+# parser.add_argument('-r',metavar='ReducedManaCost',type=float,help='Mana cost multiplier. 0.85 from talents.',default=1.0)
+# parser.add_argument('-hb',metavar='HealingBonus',type=float,help='Bonus healing from talents. Max 1.10.',default=1.0)
+# parser.add_argument('-sb',metavar='SpiritBonus',type=float,help='The total healing bonus coeff on Spirit. Max 0.25.',default=0.0)
+args	=parser.parse_args()
+########################################
+
+
+
+############# Parsing, heh #############
+sep='\t'
+book=dict()
+with open(args.i) as f:
+	next(f) # Skip!
+	for line in f:
+		fields=line.split(sep)
+
+		locusID=fields[0]
+		transID=fields[1]
+		e_value=fields[10]
+		if len(fields)==13:
+			annotat=fields[12]
+
+			if not locusID in book: book[locusID]=set()
+
+			AFIELDS=annotat.split(' ||| ')
+			for anno in AFIELDS:
+				afields=anno.split(';')
+				swiname=afields[0].split(':')[1]
+				descrip=afields[2].split('=')[1]
+				swevalu=afields[-2].split('=')[1]
+				book[locusID].add((descrip,swiname,swevalu,transID))
+########################################
+
+
+
+################ Output ################
+with open(args.i+'.reformat','w') as o:
+	print('#Description','SwissProt AC','E-value','Transcript ID\n',sep=sep,file=o)
+	for locus,stuff in sorted(book.items(),key=lambda x:int(x[0])):
+		o.write('Locus ID: '+locus+'\n')
+		for thing in sorted(stuff,key=lambda x:x[0]):
+			o.write(sep.join(list(thing))+'\n')
+		o.write('\n')
+########################################

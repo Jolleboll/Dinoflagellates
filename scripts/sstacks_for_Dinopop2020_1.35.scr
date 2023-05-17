@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J sstacks1.35dinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This runs sstacks 1.35 for the Dinopop2020 samples.
+
+dir135="/sw/bioinfo/Stacks/1.35/milou"
+
+projdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all" # For convenience...
+catadir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/cstacks_output" # Inputs
+datadir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/links_to_ustacks_outputs" # Inputs
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/sstacks_output" # Outputs!  \o/
+
+SECONDS=0 # To keep track of how much time it took
+
+cd "$projdir"
+# Create an array to house all the "-s <sample>" arguments (should have done this in the cstacks script too...)
+# samples2020.txt is just a file listing all the sample names (newline-separated)
+samples=() ; while read -r sample ; do samples+=( -s "$sample" ) ; done < samples2020.txt
+
+chmod 755 "$outdir"
+cd "$datadir" # We cd because it makes referring to all the samples easier
+"$dir135"/sstacks -b 2 -c "$catadir"/batch_2 -o "$outdir" -p 32 "${samples[@]}"
+chmod 555 "$outdir" # Just for safety. Can't accidentally remove contents of a directory if its 555.
+
+
+cd "$projdir" # Not really needed but is nice for peace of mind.
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run sstacks on Dinopop2020 samples."
+echo '#################################################################'
+
+
+# Creating symlinks of most of the stacks outputs and putting them in a single folder, for convenience
+echo "Doing symlink stuff"
+symdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/symlinks_to_all_stacks_outputs"
+chmod 755 "$symdir"
+cd "$symdir"
+ln -s ../links_to_ustacks_outputs/* .
+ln -s ../sstacks_output/*matches* .
+ln -s ../cstacks_output/batch_2* .
+cd "$projdir"
+chmod 555 "$symdir"
+echo "Done with symlink stuff"

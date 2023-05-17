@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J Dinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+
+for pop in geo country salinity population species
+do
+python3 Scripts/common_loci_among_samples.py "popmaplinks/popmap_$pop.tsv" sstacks_output/
+done

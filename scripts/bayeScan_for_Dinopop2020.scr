@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH -A snic2017-7-413
+#SBATCH -p node -n 1
+#SBATCH -t 240:00:00
+#SBATCH -J BayeScandinopop2020
+#SBATCH -o std_out_%j.txt
+#SBATCH -e std_err_%j.txt
+
+# This runs BayeScan for a population map in structure format (for Dinopop2020)
+
+SECONDS=0 # To keep track of how much time it took
+
+Bayes="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/BayeScan/binaries/BayeScan2.1_linux64bits"
+
+if [[ $1 ]] ; then infile=$1
+else echo "No input file was given. Usage: myscript.scr infile" ; { return; } 2>/dev/null || exit 1
+fi
+
+#datadir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/input"
+outdir="/crex/proj/uppstore2017173/b2014326/Dinopop2020_all/bayeScan/output"
+if [[ $2 = 'here' ]] ; then outdir='.' ; fi
+"$Bayes" "$1" -od "$outdir"
+
+
+echo '#################################################################'
+echo "$SECONDS seconds required to run BayeScan on $1."
+echo '#################################################################'
